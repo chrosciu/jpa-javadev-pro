@@ -3,14 +3,16 @@ package pl.training.jpa;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.Objects;
 
+// https://vladmihalcea.com/hibernate-facts-equals-and-hashcode
+// https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier
 @Entity
-@Data
+@Getter
+@Setter
 public class Client {
 
     @GeneratedValue
@@ -33,7 +35,7 @@ public class Client {
 
     @Override
     public int hashCode() {
-        return getClass().hashCode(); // return 13;
+        return getClass().hashCode();
     }
 
 }

@@ -1,18 +1,14 @@
 package pl.training.jpa;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.Persistence;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 
-import java.util.function.Consumer;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static pl.training.jpa.TestUtils.ENTITY_MANAGER_FACTORY;
+import static pl.training.jpa.TestUtils.run;
 
 class JpaTest {
 
-    private static final EntityManagerFactory ENTITY_MANAGER_FACTORY = Persistence.createEntityManagerFactory("training");
     private final Client client = Fixtures.testClient();
 
     @Test
@@ -23,15 +19,6 @@ class JpaTest {
             assertEquals(client.getFirstName(), persistedClient.getFirstName());
             assertEquals(client.getLastName(), persistedClient.getLastName());
         });
-    }
-
-    void run(Consumer<EntityManager> task) {
-        var entityManager = ENTITY_MANAGER_FACTORY.createEntityManager();
-        var transaction = entityManager.getTransaction();
-        transaction.begin();
-        task.accept(entityManager);
-        transaction.commit();
-        entityManager.close();
     }
 
     @AfterAll
