@@ -5,9 +5,9 @@ Training
 - slug
 - authors (list of persons)
 - tags (set of tags)
-- type (enum)
+- type (enum: STATIONARY, ELEARNING)
 - duration (embeddable)
-- difficulty (enum)
+- difficulty (enum: BASIC, INTERMEDIATE, ADVANCED)
 - description
 - modules (set of modules)
 
@@ -19,7 +19,7 @@ Person
 
 Duration
 - value
-- unit
+- unit (enum: SECONDS, MINUTES, HOURS)
 
 Module
 - id
