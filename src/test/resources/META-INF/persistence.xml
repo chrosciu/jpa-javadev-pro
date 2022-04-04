@@ -6,6 +6,10 @@
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
         <class>pl.training.jpa.Client</class>
         <class>pl.training.jpa.Payment</class>
+        <class>pl.training.jpa.Post</class>
+        <class>pl.training.jpa.Comment</class>
+        <class>pl.training.jpa.Author</class>
+        <class>pl.training.jpa.Tag</class>
         <properties>
             <property name="jakarta.persistence.jdbc.url" value="jdbc:postgresql://localhost:5432/training"/>
             <property name="jakarta.persistence.jdbc.user" value="admin"/>

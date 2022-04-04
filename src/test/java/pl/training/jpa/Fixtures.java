@@ -48,4 +48,33 @@ class Fixtures {
         return payment;
     }
 
+    static Comment testComment() {
+        var comment = new Comment();
+        comment.setId(uuid());
+        comment.setText("Test comment");
+        return comment;
+    }
+
+    static Author testAuthor() {
+        var author = new Author();
+        author.setId(uuid());
+        author.setFullName("Jan Kowalski");
+        return author;
+    }
+
+    static Tag testTag(String name) {
+        var tag = new Tag();
+        tag.setId(uuid());
+        tag.setName(name);
+        return tag;
+    }
+
+    static Post testPost(String title, String content) {
+        var post = new Post();
+        post.setId(uuid());
+        post.setTitle(title);
+        post.setContent(content);
+        return post;
+    }
+
 }
