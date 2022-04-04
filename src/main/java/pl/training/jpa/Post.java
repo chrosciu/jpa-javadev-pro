@@ -20,8 +20,8 @@ public class Post {
     @Id
     private String id;
     private String title;
-    @Basic(fetch = FetchType.LAZY)
-    @Lob
+    // @Basic(fetch = FetchType.LAZY)
+    // @Lob
     private String content;
     @JoinColumn(name = "post_id")
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)

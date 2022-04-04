@@ -1,8 +1,10 @@
 package pl.training.jpa;
 
+import jakarta.persistence.LockModeType;
 import jakarta.persistence.RollbackException;
 import org.hibernate.LazyInitializationException;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -15,6 +17,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static pl.training.jpa.TestUtils.*;
 
 class JpaTest {
+
+    private static final int RECORDS_COUNT = 10_000;
 
     private final Client client = Fixtures.testClient();
     private final Payment payment = Fixtures.testPayment(BigDecimal.valueOf(1_000));
@@ -241,22 +245,91 @@ class JpaTest {
 
     @Test
     void given_entity_when_query_with_constructor_expression_then_returns_entity_projection() {
+        createPost();
+        run(entityManager -> {
+            var postInfo = entityManager.createQuery("select new pl.training.jpa.PostInfo(p.id, p.title) from Post p", PostInfo.class)
+                    .getSingleResult();
+            assertEquals(post.getTitle(), postInfo.getTitle());
+        });
+    }
+
+    private void createPosts() {
+        run(entityManager -> {
+            for (int record = 1; record <= RECORDS_COUNT; record++) {
+                var payment = Fixtures.testPayment(BigDecimal.valueOf(1_000));
+                payment.setId(Fixtures.uuid());
+                payment.setExternalTransactionId(Fixtures.uuid());
+                entityManager.persist(payment);
+            }
+        });
     }
 
     @Test
     void given_many_entities_when_bulk_update_then_updates_the_database_without_loading_entities() {
+        createPosts();
+        measure(() -> run(entityManager -> entityManager.createQuery("update Payment p set p.money.value = :value")
+                .setParameter("value", 500)
+                .executeUpdate())); // 340 ms
     }
 
     @Test
     void given_many_entities_when_clear_then_releases_managed_entities() {
+        createPosts();
+        /*measure(() -> run(entityManager -> {
+            var pageSize = 1_000;
+            var pagesCount = RECORDS_COUNT / pageSize;
+            for (int page = 0; page <= pagesCount; page++) {
+                entityManager.createQuery("select p from Payment p", Payment.class)
+                        .setFirstResult(page * pageSize)
+                        .setMaxResults(pageSize)
+                        .getResultList()
+                        .forEach(record -> record.getMoney().setValue(BigDecimal.valueOf(500)));
+                entityManager.clear();
+            }
+        }));*/ // 55948 ms
+        measure(() -> {
+            var pageSize = 1_000;
+            var pagesCount = RECORDS_COUNT / pageSize;
+            for (int page = 0; page <= pagesCount; page++) {
+                var pageNumber = page * pageSize;
+                run(entityManager -> entityManager.createQuery("select p from Payment p", Payment.class)
+                        .setFirstResult(pageNumber)
+                        .setMaxResults(pageSize)
+                        .getResultList()
+                        .forEach(record -> record.getMoney().setValue(BigDecimal.valueOf(500)))
+                );
+            }
+        }); // 76136 ms
     }
 
     @Test
     void given_versioned_entity_when_first_transaction_tires_to_override_changes_from_second_transaction_then_first_transaction_is_rolled_back() throws InterruptedException {
+        payment.setId(Fixtures.uuid());
+        payment.setExternalTransactionId(Fixtures.uuid());
+        run(entityManager -> entityManager.persist(payment));
+        execute(List.of(
+                new UpdatePaymentTask(payment.getId(), BigDecimal.valueOf(3_000), LockModeType.NONE, 1, 5),
+                new UpdatePaymentTask(payment.getId(), BigDecimal.valueOf(6_000), LockModeType.NONE, 2, 3)
+        ));
+        run(entityManager -> {
+            var persistedPayment = entityManager.find(Payment.class, payment.getId());
+            assertEquals(BigDecimal.valueOf(6_000).setScale(2), persistedPayment.getMoney().getValue());
+        });
     }
 
     @Test
     void given_two_transactions_when_first_transactions_acquired_the_lock_then_second_transaction_waits_for_first_transaction_to_release_the_lock() throws InterruptedException {
+        payment.setId(Fixtures.uuid());
+        payment.setExternalTransactionId(Fixtures.uuid());
+        run(entityManager -> entityManager.persist(payment));
+        execute(List.of(
+                new UpdatePaymentTask(payment.getId(), BigDecimal.valueOf(3_000), LockModeType.PESSIMISTIC_WRITE, 1, 5),
+                new UpdatePaymentTask(payment.getId(), BigDecimal.valueOf(6_000), LockModeType.PESSIMISTIC_WRITE, 2, 3)
+        ));
+        run(entityManager -> {
+            var persistedPayment = entityManager.find(Payment.class, payment.getId());
+            assertEquals(BigDecimal.valueOf(6_000).setScale(2), persistedPayment.getMoney().getValue());
+        });
     }
 
 }

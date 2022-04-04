@@ -6,6 +6,9 @@ import jakarta.persistence.Persistence;
 import org.hibernate.SessionFactory;
 import org.hibernate.stat.Statistics;
 
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
 class TestUtils {
@@ -26,12 +29,38 @@ class TestUtils {
         new Thread(() -> run(task)).start();
     }
 
+    static void execute(List<Task> tasks) throws InterruptedException {
+        var countDownLatch = new CountDownLatch(tasks.size());
+        var executor = Executors.newFixedThreadPool(tasks.size());
+        tasks.forEach(task -> {
+            task.setEntityManager(ENTITY_MANAGER_FACTORY.createEntityManager());
+            task.setCountDownLatch(countDownLatch);
+            executor.submit(task);
+        });
+        countDownLatch.await();
+        System.out.println("Completed");
+    }
+
     static void sleep(long milliseconds) {
         try {
             Thread.sleep(milliseconds);
         } catch (InterruptedException exception) {
             exception.printStackTrace();
         }
+    }
+
+    static void measure(Runnable runnable) {
+        var startTime = System.currentTimeMillis();
+        runnable.run();
+        System.out.println("Total time: " + (System.currentTimeMillis() - startTime) + " ms");
+    }
+
+    interface Task extends Runnable {
+
+        void setEntityManager(EntityManager entityManager);
+
+        void setCountDownLatch(CountDownLatch countDownLatch);
+
     }
 
 }

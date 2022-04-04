@@ -50,7 +50,7 @@ public class Payment {
     private String checksum;
     // @Convert(converter = FastMoneyConverter.class)
     // private FastMoney value;
-    @AttributeOverride(name = "value", column = @Column(nullable = false))
+    @AttributeOverride(name = "value", column = @Column(nullable = false, precision = 10, scale = 2))
     @Embedded
     private Money money;
     @ElementCollection(fetch = FetchType.LAZY)
@@ -60,5 +60,7 @@ public class Payment {
     @Column(name = "value")
     @ElementCollection(fetch = FetchType.LAZY)
     private Map<String, String> properties;
+    @Version
+    private Long version;
 
 }
