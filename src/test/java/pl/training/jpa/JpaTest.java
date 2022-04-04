@@ -5,12 +5,15 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static pl.training.jpa.TestUtils.*;
 
 class JpaTest {
 
     private final Client client = Fixtures.testClient();
+    private final Payment payment = Fixtures.testPayment(BigDecimal.valueOf(1_000));
     private Client clientProxy;
 
     @BeforeEach
@@ -123,6 +126,26 @@ class JpaTest {
 
     @Test
     void given_an_entity_with_custom_mappings_when_persist_then_entity_state_is_saved_into_database() {
+        // var paymentId = Fixtures.testPaymentId(); // @IdClass, @Embeddable
+
+        /* @IdClass
+        payment.setId(paymentId.getId());
+        payment.setExternalTransactionId(paymentId.getExternalTransactionId());
+        */
+
+        /* @Embeddable
+        payment.setId(paymentId);
+        */
+
+        payment.setId(Fixtures.uuid());
+        payment.setExternalTransactionId(Fixtures.uuid());
+
+        run(entityManager -> entityManager.persist(payment));
+        run(entityManager -> {
+            // var persistedPayment = entityManager.find(Payment.class, paymentId); // @IdClass, @Embeddable
+            var persistedPayment = entityManager.find(Payment.class, payment.getId());
+            assertNotNull(persistedPayment);
+        });
     }
 
     @Test
