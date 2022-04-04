@@ -1,0 +1,30 @@
+Training
+- id
+- code
+- title
+- slug
+- authors (list of persons)
+- tags (set of tags)
+- type (enum)
+- duration (embeddable)
+- difficulty (enum)
+- description
+- modules (set of modules)
+
+Person
+- id
+- firstName
+- lastName
+- emails (set of strings)
+
+Duration
+- value
+- unit
+
+Module
+- id
+- title
+- description
+- duration (embeddable)
+- submodules (list of modules)
+
