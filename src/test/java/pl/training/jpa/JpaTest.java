@@ -332,6 +332,19 @@ class JpaTest {
         });
     }
 
+    @Test
+    void given_entities_with_inheritance_when_persist_all_entities_then_entities_state_and_relations_are_synchronized_with_database() {
+        var employee = new Employee();
+        employee.setName("Jan Kowalski");
+        var contractEmployee = new ContractEmployee();
+        contractEmployee.setName("Marek Nowak");
+        contractEmployee.setContractType("b2b");
+        run(entityManager -> {
+            entityManager.persist(employee);
+            entityManager.persist(contractEmployee);
+        });
+    }
+
 
     private void createTrainings() {
         run(entityManager -> {

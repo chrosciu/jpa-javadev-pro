@@ -4,6 +4,7 @@
              xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd">
     <persistence-unit name="training">
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+        <!--<mapping-file>/META-INF/orm.xml</mapping-file>-->
         <class>pl.training.jpa.Client</class>
         <class>pl.training.jpa.Payment</class>
         <class>pl.training.jpa.Post</class>
@@ -13,6 +14,8 @@
         <class>pl.training.jpa.Training</class>
         <class>pl.training.jpa.Module</class>
         <class>pl.training.jpa.Person</class>
+        <class>pl.training.jpa.Employee</class>
+        <class>pl.training.jpa.ContractEmployee</class>
         <properties>
             <property name="jakarta.persistence.jdbc.url" value="jdbc:postgresql://localhost:5432/training"/>
             <property name="jakarta.persistence.jdbc.user" value="admin"/>
