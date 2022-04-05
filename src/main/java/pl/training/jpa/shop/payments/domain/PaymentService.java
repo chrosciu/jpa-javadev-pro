@@ -5,10 +5,10 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 class PaymentService {
 
-    private final PaymentsReaderAdapter paymentsReader;
+    private final PaymentReaderAdapter paymentReader;
 
     PaymentDomain getById(String id) {
-        return paymentsReader.getById(id)
+        return paymentReader.getById(id)
                 .orElseThrow(PaymentNotFoundException::new);
     }
 

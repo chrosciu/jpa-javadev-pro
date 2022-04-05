@@ -9,12 +9,12 @@ import pl.training.jpa.shop.payments.ports.PaymentId;
 class GetPaymentUseCaseAdapter implements GetPaymentUseCase {
 
     private final PaymentService paymentService;
-    private final PaymentsDomainMapper paymentsMapper;
+    private final PaymentDomainMapper paymentMapper;
 
     @Override
     public Payment getById(PaymentId id) {
-        var paymentDomain = paymentService.getById(paymentsMapper.toDomain(id));
-        return paymentsMapper.toContract(paymentDomain);
+        var paymentDomain = paymentService.getById(paymentMapper.toDomain(id));
+        return paymentMapper.toContract(paymentDomain);
     }
 
 }

@@ -9,8 +9,8 @@ public class DefaultPaymentsFactory implements PaymentsFactory {
 
     @Override
     public GetPaymentUseCase getPaymentUseCase(PaymentReader paymentReader) {
-        var paymentsMapper = Mappers.getMapper(PaymentsDomainMapper.class);
-        var paymentsReaderAdapter = new PaymentsReaderAdapter(paymentReader, paymentsMapper);
+        var paymentsMapper = Mappers.getMapper(PaymentDomainMapper.class);
+        var paymentsReaderAdapter = new PaymentReaderAdapter(paymentReader, paymentsMapper);
         var paymentsService = new PaymentService(paymentsReaderAdapter);
         return new GetPaymentUseCaseAdapter(paymentsService, paymentsMapper);
     }
