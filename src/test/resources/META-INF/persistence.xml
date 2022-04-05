@@ -10,6 +10,9 @@
         <class>pl.training.jpa.Comment</class>
         <class>pl.training.jpa.Author</class>
         <class>pl.training.jpa.Tag</class>
+        <class>pl.training.jpa.Training</class>
+        <class>pl.training.jpa.Module</class>
+        <class>pl.training.jpa.Person</class>
         <properties>
             <property name="jakarta.persistence.jdbc.url" value="jdbc:postgresql://localhost:5432/training"/>
             <property name="jakarta.persistence.jdbc.user" value="admin"/>
