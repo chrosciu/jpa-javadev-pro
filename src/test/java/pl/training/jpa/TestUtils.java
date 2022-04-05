@@ -13,7 +13,7 @@ import java.util.function.Consumer;
 
 class TestUtils {
 
-    static final EntityManagerFactory ENTITY_MANAGER_FACTORY = Persistence.createEntityManagerFactory("training");
+    static final EntityManagerFactory ENTITY_MANAGER_FACTORY = Persistence.createEntityManagerFactory("training-test");
     static final Statistics STATISTICS = ENTITY_MANAGER_FACTORY.unwrap(SessionFactory.class).getStatistics();
 
     static void run(Consumer<EntityManager> task) {

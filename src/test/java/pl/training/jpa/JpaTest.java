@@ -2,6 +2,7 @@ package pl.training.jpa;
 
 import jakarta.persistence.LockModeType;
 import jakarta.persistence.RollbackException;
+import net.sf.ehcache.CacheManager;
 import org.hibernate.LazyInitializationException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
@@ -618,5 +619,41 @@ class JpaTest {
         });
     }
 
+
+    @Test
+    void test() {
+        run(entityManager -> entityManager.persist(client));
+        run(entityManager -> {
+            entityManager.find(Client.class, client.getId());
+            var cacheManager = CacheManager.ALL_CACHE_MANAGERS.get(0);
+            int cacheSize = cacheManager.getCache("pl.training.jpa.Client").getSize();
+            assertEquals(1, cacheSize);
+        });
+        run(entityManager -> {
+            entityManager.find(Client.class, client.getId());
+            assertEquals(2, STATISTICS.getSecondLevelCacheHitCount());
+        });
+        System.out.println("#################################################");
+        run(entityManager -> {
+            assertEquals(0, getQueriesCacheSize());
+            entityManager.createQuery("select c from Client c")
+                    .setHint("org.hibernate.cacheable", true)
+                    .getResultList();
+            assertEquals(1, getQueriesCacheSize());
+        });
+        System.out.println("#################################################");
+        run(entityManager -> {
+            assertEquals(1, getQueriesCacheSize());
+            entityManager.createQuery("select c from Client c")
+                    .setHint("org.hibernate.cacheable", true)
+                    .getResultList();
+            assertEquals(1, getQueriesCacheSize());
+        });
+    }
+
+    private int getQueriesCacheSize() {
+        var cacheManager = CacheManager.ALL_CACHE_MANAGERS.get(0);
+        return cacheManager.getCache("default-query-results-region").getSize();
+    }
 
 }

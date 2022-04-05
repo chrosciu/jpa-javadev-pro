@@ -2,7 +2,7 @@
 <persistence xmlns="https://jakarta.ee/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
              version="3.0"
              xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd">
-    <persistence-unit name="training">
+    <persistence-unit name="training-test">
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
         <!--<mapping-file>/META-INF/orm.xml</mapping-file>-->
         <class>pl.training.jpa.Client</class>
@@ -16,6 +16,7 @@
         <class>pl.training.jpa.Person</class>
         <class>pl.training.jpa.Employee</class>
         <class>pl.training.jpa.ContractEmployee</class>
+        <shared-cache-mode>ENABLE_SELECTIVE</shared-cache-mode>
         <properties>
             <property name="jakarta.persistence.jdbc.url" value="jdbc:postgresql://localhost:5432/training"/>
             <property name="jakarta.persistence.jdbc.user" value="admin"/>
@@ -24,9 +25,12 @@
             <property name="jakarta.persistence.schema-generation.database.action" value="drop-and-create"/>
             <property name="hibernate.connection.provider_class" value="com.zaxxer.hikari.hibernate.HikariConnectionProvider"/>
             <property name="hibernate.hikari.maximumPoolSize" value="10"/>
-           <!-- <property name="hibernate.generate_statistics" value="true"/>-->
+            <property name="hibernate.generate_statistics" value="true"/>
             <property name="hibernate.show_sql" value="true"/>
             <property name="hibernate.format_sql" value="true"/>
+            <!--<property name="cache.use_second_level_cache" value="true"/>-->
+            <property name="hibernate.cache.use_query_cache" value="true"/>
+            <property name="hibernate.cache.region.factory_class" value="org.hibernate.cache.ehcache.internal.EhcacheRegionFactory"/>
         </properties>
     </persistence-unit>
 </persistence>

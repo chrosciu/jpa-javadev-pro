@@ -20,6 +20,8 @@ val junitVersion = "5.8.2"
 
 dependencies {
     implementation("org.hibernate:hibernate-core:6.0.0.CR1")
+    implementation("org.hibernate:hibernate-ehcache:6.0.0.Alpha7")
+    implementation("javax.transaction:javax.transaction-api:1.3")
     implementation("org.postgresql:postgresql:42.3.3")
     implementation("com.zaxxer:HikariCP:5.0.1")
     implementation("org.javamoney:moneta:1.4.2")
