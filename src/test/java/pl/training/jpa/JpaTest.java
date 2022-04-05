@@ -8,7 +8,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import javax.lang.model.type.UnionType;
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -409,8 +411,212 @@ class JpaTest {
     }
 
     @Test
-    void queries() {
+    void select_all_trainings() {
         createTrainings();
+        run(entityManager -> {
+            var pageNumber = 0;
+            var pageSize = 10;
+
+            // var query = entityManager.createNamedQuery(Training.ALL, Training.class);
+
+            var criteriaBuilder = entityManager.getCriteriaBuilder();
+            var criteriaQuery = criteriaBuilder.createQuery(Training.class);
+            var trainingsRoot = criteriaQuery.from(Training.class);
+
+            var query = entityManager.createQuery(criteriaQuery);
+
+            var result  = query.setHint("jakarta.persistence.fetchgraph", entityManager.createEntityGraph(Training.WITH_ALL))
+                    .setFirstResult(pageNumber * pageSize)
+                    .setMaxResults(pageSize)
+                    .getResultList();
+            result.forEach(System.out::println);
+        });
     }
+
+    @Test
+    void select_trainings_by_title() {
+        createTrainings();
+        run(entityManager -> {
+            /*var query = entityManager.createQuery("select t from Training t where t.title = :title", Training.class)
+                    .setParameter("title", "Programming in C++");*/
+
+            var criteriaBuilder = entityManager.getCriteriaBuilder();
+            var criteriaQuery = criteriaBuilder.createQuery(Training.class);
+            var trainingsRoot = criteriaQuery.from(Training.class);
+            criteriaQuery.select(trainingsRoot)
+                    .where(criteriaBuilder.equal(trainingsRoot.<String>get("title"), "Programming in C++"));
+            var query = entityManager.createQuery(criteriaQuery);
+
+            var result  = query.getSingleResult();
+            System.out.println(result);
+        });
+    }
+
+    @Test
+    void select_trainings_code_and_title() {
+        createTrainings();
+        run(entityManager -> {
+            var pageNumber = 0;
+            var pageSize = 10;
+
+            // var query = entityManager.createQuery("select t.code, t.title from Training t", Object[].class);
+
+            var criteriaBuilder = entityManager.getCriteriaBuilder();
+            var criteriaQuery = criteriaBuilder.createTupleQuery();
+            var trainingsRoot = criteriaQuery.from(Training.class);
+            criteriaQuery.multiselect(trainingsRoot.<String>get("code").alias("code"), trainingsRoot.<String>get("title").alias("title"));
+            var query = entityManager.createQuery(criteriaQuery);
+
+            var result  = query.setHint("jakarta.persistence.fetchgraph", entityManager.createEntityGraph(Training.WITH_ALL))
+                    .setFirstResult(pageNumber * pageSize)
+                    .setMaxResults(pageSize)
+                    .getResultList();
+
+            // result.forEach(record -> System.out.println(Arrays.toString(record)));
+
+            result.forEach(record -> System.out.println(record.get("code") + " " + record.get("title")));
+        });
+    }
+
+    @Test
+    void select_trainings_projection() {
+        createTrainings();
+        run(entityManager -> {
+            var pageNumber = 0;
+            var pageSize = 10;
+
+            // var query = entityManager.createQuery("select new pl.training.jpa.TrainingView(t.code, t.title) from Training t", TrainingView.class);
+
+            var criteriaBuilder = entityManager.getCriteriaBuilder();
+            var criteriaQuery = criteriaBuilder.createQuery(TrainingView.class);
+            var trainingsRoot = criteriaQuery.from(Training.class);
+            criteriaQuery.select(criteriaBuilder.construct(TrainingView.class, trainingsRoot.<String>get("code").alias("code"), trainingsRoot.<String>get("title").alias("title")));
+            var query = entityManager.createQuery(criteriaQuery);
+
+            var result  = query.setHint("jakarta.persistence.fetchgraph", entityManager.createEntityGraph(Training.WITH_ALL))
+                    .setFirstResult(pageNumber * pageSize)
+                    .setMaxResults(pageSize)
+                    .getResultList();
+
+            result.forEach(System.out::println);
+        });
+    }
+
+    @Test
+    void select_trainings_authors_last_name_and_trainings_title() {
+        createTrainings();
+        run(entityManager -> {
+            var pageNumber = 0;
+            var pageSize = 10;
+
+            // var query = entityManager.createQuery("select a.lastName, t.title from Training t join t.authors a", Object[].class);
+
+            var criteriaBuilder = entityManager.getCriteriaBuilder();
+            var criteriaQuery = criteriaBuilder.createQuery(Object[].class);
+            var trainingsRoot = criteriaQuery.from(Training.class);
+            var authorsJoin = trainingsRoot.<Training, Person>join("authors");
+            criteriaQuery.multiselect(authorsJoin.<String>get("lastName"), trainingsRoot.<String>get("title"));
+            var query = entityManager.createQuery(criteriaQuery);
+
+            var result  = query.setHint("jakarta.persistence.fetchgraph", entityManager.createEntityGraph(Training.WITH_ALL))
+                    .setFirstResult(pageNumber * pageSize)
+                    .setMaxResults(pageSize)
+                    .getResultList();
+
+            result.forEach(record -> System.out.println(Arrays.toString(record)));
+        });
+    }
+
+    @Test
+    void select_trainings_by_tags() {
+        createTrainings();
+        run(entityManager -> {
+            var pageNumber = 0;
+            var pageSize = 10;
+            var tags = List.of("java", "oop");
+
+            /* var query = entityManager.createQuery("select t from Training t join t.tags ta where ta.name in :tags group by t having count (t) = :count order by t.code", Training.class)
+                .setParameter("tags", tags)
+                .setParameter("count", tags.size());*/
+
+            var criteriaBuilder = entityManager.getCriteriaBuilder();
+            var criteriaQuery = criteriaBuilder.createQuery(Training.class);
+            var trainingsRoot = criteriaQuery.from(Training.class);
+            var tagsJoin = trainingsRoot.<Training, Tag>join("tags");
+            criteriaQuery.select(trainingsRoot)
+                    .where(tagsJoin.get("name").in(tags))
+                    .groupBy(trainingsRoot)
+                    .having(criteriaBuilder.equal(criteriaBuilder.count(trainingsRoot), tags.size()))
+                    .orderBy(criteriaBuilder.asc(trainingsRoot.get("code")));
+            var query = entityManager.createQuery(criteriaQuery);
+
+            var result  = query
+                    .setFirstResult(pageNumber * pageSize)
+                    .setMaxResults(pageSize)
+                    .getResultList();
+
+            result.forEach(System.out::println);
+        });
+    }
+
+    @Test
+    void select_trainings_with_duration() {
+        createTrainings();
+        run(entityManager -> {
+            var pageNumber = 0;
+            var pageSize = 10;
+
+            /*var query = entityManager.createQuery("select t from Training t where t.duration.unit = :unitType and duration.value between :minHours and :maxHours", Training.class)
+                    .setParameter("unitType", DurationUnit.HOURS)
+                    .setParameter("minHours", 10L)
+                    .setParameter("maxHours", 15L);*/
+
+            var criteriaBuilder = entityManager.getCriteriaBuilder();
+            var criteriaQuery = criteriaBuilder.createQuery(Training.class);
+            var trainingsRoot = criteriaQuery.from(Training.class);
+            criteriaQuery.select(trainingsRoot)
+                    .where(criteriaBuilder.and(
+                            criteriaBuilder.equal(trainingsRoot.get("duration").get("unit"), DurationUnit.HOURS),
+                            criteriaBuilder.between(trainingsRoot.get("duration").get("value"), 10L, 15L)
+                    ));
+            var query = entityManager.createQuery(criteriaQuery);
+
+            var result  = query
+                    .setFirstResult(pageNumber * pageSize)
+                    .setMaxResults(pageSize)
+                    .getResultList();
+
+            result.forEach(System.out::println);
+        });
+    }
+
+    @Test
+    void select_trainings_authors_last_name_and_trainings_count_when_trainings_count_is_greater_or_equal_two() {
+        createTrainings();
+        run(entityManager -> {
+            var pageNumber = 0;
+            var pageSize = 10;
+
+            // var query = entityManager.createQuery("select a.lastName, count(t) from Training t join t.authors a group by a having count (t) > 1", Object[].class);
+
+            var criteriaBuilder = entityManager.getCriteriaBuilder();
+            var criteriaQuery = criteriaBuilder.createQuery(Object[].class);
+            var trainingsRoot = criteriaQuery.from(Training.class);
+            var authorsJoin = trainingsRoot.<Training, Person>join("authors");
+            criteriaQuery.multiselect(authorsJoin.get("lastName"), criteriaBuilder.count(trainingsRoot))
+                    .groupBy(authorsJoin)
+                    .having(criteriaBuilder.greaterThan(criteriaBuilder.count(trainingsRoot), 1L));
+
+            var query = entityManager.createQuery(criteriaQuery);
+
+            var result  = query
+                    .setFirstResult(pageNumber * pageSize)
+                    .setMaxResults(pageSize)
+                    .getResultList();
+
+            result.forEach(record -> System.out.println(Arrays.toString(record)));
+        });
+    }
+
 
 }
