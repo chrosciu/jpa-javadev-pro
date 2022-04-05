@@ -5,15 +5,21 @@ import pl.training.jpa.shop.commons.FastMoneyMapper;
 import pl.training.jpa.shop.payments.ports.Payment;
 import pl.training.jpa.shop.payments.ports.PaymentId;
 
+import java.util.UUID;
+
 @Mapper(uses = FastMoneyMapper.class)
 interface PaymentDomainMapper {
 
     PaymentDomain toDomain(Payment payment);
 
-    String toDomain(PaymentId id);
+    default String toDomain(PaymentId id) {
+        return id.getUuid().toString();
+    }
 
     Payment toContract(PaymentDomain payment);
 
-    PaymentId toContract(String id);
+    default PaymentId toContract(String id) {
+        return new PaymentId(UUID.fromString(id));
+    }
 
 }

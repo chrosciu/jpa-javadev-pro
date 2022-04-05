@@ -15,7 +15,8 @@ public class PaymentReaderAdapter implements PaymentReader {
 
     @Override
     public Optional<Payment> getById(PaymentId id) {
-       return Optional.ofNullable(paymentRepository.getById(paymentMapper.toEntity(id)))
+       var paymentEntity = paymentRepository.getById(paymentMapper.toEntity(id));
+       return  Optional.ofNullable(paymentEntity)
                .map(paymentMapper::toContract);
     }
 
