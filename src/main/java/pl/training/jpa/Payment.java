@@ -68,40 +68,4 @@ public class Payment {
     @Version
     private Long version;
 
-    /*
-    @PrePersist
-    public void prePersist() {
-        log.info("### prePersist");
-    }
-
-    @PostPersist
-    public void postPersist() {
-        log.info("### postPersist");
-    }
-
-    @PreUpdate
-    public void preUpdate() {
-        log.info("### preUpdate");
-    }
-
-    @PostUpdate
-    public void postUpdate() {
-        log.info("### postUpdate");
-    }
-
-    @PreRemove
-    public void preRemove() {
-        log.info("### preRemove");
-    }
-
-    @PostRemove
-    public void postRemove() {
-        log.info("### postRemove");
-    }
-
-    @PostLoad
-    public void postLoad() {
-        log.info("### postLoad");
-    }*/
-
 }

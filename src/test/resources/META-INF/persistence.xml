@@ -4,7 +4,6 @@
              xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd">
     <persistence-unit name="training-test">
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
-        <!--<mapping-file>/META-INF/orm.xml</mapping-file>-->
         <class>pl.training.jpa.Client</class>
         <class>pl.training.jpa.Payment</class>
         <class>pl.training.jpa.Post</class>
@@ -16,7 +15,7 @@
         <class>pl.training.jpa.Person</class>
         <class>pl.training.jpa.Employee</class>
         <class>pl.training.jpa.ContractEmployee</class>
-        <shared-cache-mode>ENABLE_SELECTIVE</shared-cache-mode>
+        <!--<shared-cache-mode>ENABLE_SELECTIVE</shared-cache-mode>-->
         <properties>
             <property name="jakarta.persistence.jdbc.url" value="jdbc:postgresql://localhost:5432/training"/>
             <property name="jakarta.persistence.jdbc.user" value="admin"/>
@@ -28,9 +27,9 @@
             <property name="hibernate.generate_statistics" value="true"/>
             <property name="hibernate.show_sql" value="true"/>
             <property name="hibernate.format_sql" value="true"/>
-            <!--<property name="cache.use_second_level_cache" value="true"/>-->
+            <!--<property name="cache.use_second_level_cache" value="true"/>
             <property name="hibernate.cache.use_query_cache" value="true"/>
-            <property name="hibernate.cache.region.factory_class" value="org.hibernate.cache.ehcache.internal.EhcacheRegionFactory"/>
+            <property name="hibernate.cache.region.factory_class" value="org.hibernate.cache.ehcache.internal.EhcacheRegionFactory"/>-->
         </properties>
     </persistence-unit>
 </persistence>
