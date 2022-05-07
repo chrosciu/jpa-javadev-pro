@@ -1,5 +1,6 @@
 package pl.training.jpa;
 
+import jakarta.persistence.RollbackException;
 import org.hibernate.LazyInitializationException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -7,6 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -22,6 +24,7 @@ class JpaTest {
     private final Author author = Fixtures.testAuthor();
     private final Comment comment = Fixtures.testComment();
     private Client clientProxy;
+    private Set<Tag> tagsProxy;
 
     @BeforeEach
     void beforeEach() {
@@ -160,36 +163,80 @@ class JpaTest {
     }
 
     private void createPost() {
-
+        run(entityManager -> {
+           entityManager.persist(post);
+           // entityManager.persist(comment);
+           entityManager.persist(author);
+           entityManager.persist(tag);
+           entityManager.persist(secondTag);
+        });
     }
 
     @Test
     void given_entities_with_relations_when_persist_all_entities_then_entities_state_and_relations_are_synchronized_with_database() {
-
+        createPost();
+        run(entityManager -> {
+            var persistedPost = entityManager.find(Post.class, post.getId());
+            assertNotNull(persistedPost);
+        });
     }
 
     @Test
     void given_entities_with_relations_when_persist_some_entities_then_throws_exception() {
+        assertThrows(RollbackException.class, () -> run(entityManager -> entityManager.persist(post)));
     }
 
     @Test
     void given_entities_with_relations_when_find_then_return_post_without_comments_and_tags() {
+        createPost();
+        run(entityManager -> {
+            var persistedPost = entityManager.find(Post.class, post.getId());
+            assertEquals(1, STATISTICS.getEntityLoadCount());
+        });
     }
 
     @Test
     void given_entities_with_relations_when_find_then_lazy_loads_tags() {
+        createPost();
+        run(entityManager -> {
+            var persistedPost = entityManager.find(Post.class, post.getId());
+            var tags = persistedPost.getTags();
+            assertEquals(1, STATISTICS.getEntityLoadCount());
+            tags.forEach(System.out::println);
+            assertEquals(3, STATISTICS.getEntityLoadCount());
+        });
     }
 
     @Test
     void given_entities_with_relations_when_access_tags_and_transaction_is_closed_then_throws_an_exception() {
+        createPost();
+        run(entityManager -> tagsProxy = entityManager.find(Post.class, post.getId()).getTags());
+        assertThrows(LazyInitializationException.class, () -> tagsProxy.forEach(System.out::println));
     }
 
     @Test
     void given_entities_with_relations_when_join_fetch_tags_then_returns_post_and_tags() {
+        createPost();
+        run(entityManager -> {
+            entityManager.createQuery("select p from Post p join fetch p.tags", Post.class).getResultList();
+            assertEquals(3, STATISTICS.getEntityLoadCount());
+        });
     }
 
     @Test
     void given_entities_with_relations_when_find_with_entity_graph_then_returns_post_with_tags() {
+        createPost();
+        run(entityManager -> {
+            var entityGraph = entityManager.createEntityGraph(Post.class);
+            entityGraph.addAttributeNodes("tags");
+            // var entityGraph = entityManager.createEntityGraph(Post.WITH_TAGS);
+            // All attributes specified in entity graph will be treated as Eager, and all attribute not specified will be treated as Lazy
+            // Map<String, Object> properties = Map.of("jakarta.persistence.fetchgraph", entityGraph);
+            // All attributes specified in entity graph will be treated as Eager, and all attribute not specified use their default/mapped value
+            Map<String, Object> properties = Map.of("jakarta.persistence.loadgraph", entityGraph);
+            var persistedPost = entityManager.find(Post.class, post.getId(), properties);
+            assertEquals(3, STATISTICS.getEntityLoadCount());
+        });
     }
 
     @Test

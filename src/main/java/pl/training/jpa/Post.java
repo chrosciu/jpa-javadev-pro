@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 
 @NamedEntityGraph(name = Post.WITH_TAGS, attributeNodes = @NamedAttributeNode("tags"))
+@NamedEntityGraph(name = Post.WITH_COMMENTS, attributeNodes = @NamedAttributeNode("comments"))
 @Entity
 @Getter
 @Setter
@@ -16,6 +17,7 @@ import java.util.Set;
 public class Post {
 
     public static final String WITH_TAGS = "postWithTags";
+    public static final String WITH_COMMENTS = "postWithComments";
 
     @Id
     private String id;
