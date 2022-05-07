@@ -1,8 +1,11 @@
 package pl.training.jpa;
 
 import jakarta.persistence.AttributeConverter;
+import jakarta.persistence.Convert;
+import jakarta.persistence.Converter;
 import org.javamoney.moneta.FastMoney;
 
+@Converter(autoApply = true)
 public class FastMoneyConverter implements AttributeConverter<FastMoney, String> {
 
     @Override

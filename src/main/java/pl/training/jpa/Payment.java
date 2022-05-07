@@ -12,7 +12,7 @@ import java.util.Map;
 
 @ExcludeSuperclassListeners
 @ExcludeDefaultListeners
-//@EntityListeners(PaymentListener.class)
+// @EntityListeners(PaymentListener.class)
 // @IdClass(PaymentId.class)
 @Table(name = "payments", indexes = @Index(name = "paymentStatus", columnList = "status"))
 @Entity
@@ -21,7 +21,7 @@ import java.util.Map;
 @Setter
 @EqualsAndHashCode(of = "id") // @Id, @Embeddable
 // @EqualsAndHashCode(of = {"id", "externalTransactionId"}) // @IdClass
-public class Payment {
+ public class Payment {
 
     /* @Embeddable
     @EmbeddedId
@@ -67,5 +67,40 @@ public class Payment {
     private Map<String, String> properties;
     @Version
     private Long version;
+
+   /* @PrePersist
+    public void prePersist() {
+        log.info("### prePersist");
+    }
+
+    @PostPersist
+    public void postPersist() {
+        log.info("### postPersist");
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        log.info("### preUpdate");
+    }
+
+    @PostUpdate
+    public void postUpdate() {
+        log.info("### postUpdate");
+    }
+
+    @PreRemove
+    public void preRemove() {
+        log.info("### preRemove");
+    }
+
+    @PostRemove
+    public void postRemove() {
+        log.info("### preRemove");
+    }
+
+    @PostLoad
+    public void postLoad() {
+        log.info("### postLoad");
+    }*/
 
 }

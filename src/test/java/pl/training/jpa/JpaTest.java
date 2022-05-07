@@ -1,16 +1,36 @@
 package pl.training.jpa;
 
+import org.hibernate.LazyInitializationException;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static pl.training.jpa.TestUtils.ENTITY_MANAGER_FACTORY;
-import static pl.training.jpa.TestUtils.run;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Set;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static pl.training.jpa.TestUtils.*;
 
 class JpaTest {
 
     private final Client client = Fixtures.testClient();
+    private final Payment payment = Fixtures.testPayment(BigDecimal.valueOf(1_000));
+    private final Post post = Fixtures.testPost("Test title", "Test content");
+    private final Tag tag = Fixtures.testTag("Java");
+    private final Tag secondTag = Fixtures.testTag("Kotlin");
+    private final Author author = Fixtures.testAuthor();
+    private final Comment comment = Fixtures.testComment();
+    private Client clientProxy;
+
+    @BeforeEach
+    void beforeEach() {
+        STATISTICS.clear();
+        post.setTags(Set.of(tag, secondTag));
+        post.setComments(List.of(comment));
+        comment.setAuthor(author);
+        author.setComments(List.of(comment));
+    }
 
     @AfterAll
     static void afterAll() {
@@ -29,39 +49,123 @@ class JpaTest {
 
     @Test
     void given_an_attached_entity_when_entity_state_is_changed_then_entity_state_is_automatically_synchronized_with_the_database() {
-
+        var newFirstName = "Marek";
+        run(entityManager -> {
+            entityManager.persist(client);
+            // entityManager.flush();
+            client.setFirstName(newFirstName);
+        });
+        run(entityManager -> {
+            var persistedClient = entityManager.find(Client.class, client.getId());
+            assertEquals(newFirstName, persistedClient.getFirstName());
+        });
     }
 
     @Test
     void given_a_detached_entity_when_merge_then_entity_state_is_automatically_synchronized_with_the_database_and_managed_entity_is_returned() {
+        var newFirstName = "Marek";
+        run(entityManager -> entityManager.persist(client));
+        run(entityManager -> {
+            client.setFirstName(newFirstName);
+            var managedClient = entityManager.merge(client);
+        });
+        run(entityManager -> {
+            var persistedClient = entityManager.find(Client.class, client.getId());
+            assertEquals(newFirstName, persistedClient.getFirstName());
+        });
     }
 
     @Test
     void given_an_attached_entity_when_remove_then_entity_state_is_removed_from_database() {
+        run(entityManager -> entityManager.persist(client));
+        run(entityManager -> {
+            var persistedClient = entityManager.find(Client.class, client.getId());
+            entityManager.remove(persistedClient);
+        });
+        run(entityManager -> assertNull(entityManager.find(Client.class, client.getId())));
     }
 
     @Test
     void given_a_detached_entity_when_remove_then_throws_an_exception() {
+        run(entityManager -> {
+            entityManager.persist(client);
+            entityManager.detach(client);
+            // entityManager.clear();
+            assertThrows(IllegalArgumentException.class, () -> entityManager.remove(client));
+        });
     }
 
     @Test
     void given_an_entity_when_refresh_then_entity_state_is_synchronized_with_database_state() {
+        var newFirstName = "Marek";
+        run(entityManager -> entityManager.persist(client));
+        run(entityManager -> {
+            var persistedClient = entityManager.find(Client.class, client.getId());
+            updateAsyncClient(newFirstName);
+            sleep(500);
+            persistedClient.setFirstName("Test");
+            entityManager.refresh(persistedClient);
+            assertEquals(newFirstName, persistedClient.getFirstName());
+        });
+    }
+
+    private void updateAsyncClient(String newFirstName) {
+        runAsync(entityManager -> {
+            var persistedClient = entityManager.find(Client.class, client.getId());
+            persistedClient.setFirstName(newFirstName);
+        });
     }
 
     @Test
     void given_a_persisted_entity_when_get_reference_then_entity_state_is_lazy_loaded() {
+        run(entityManager -> entityManager.persist(client));
+        run(entityManager -> {
+            clientProxy = entityManager.getReference(Client.class, client.getId());
+            var clientId= clientProxy.getId();
+            assertEquals(0, STATISTICS.getEntityLoadCount());
+            var clientFirstName = clientProxy.getFirstName();
+            assertEquals(1, STATISTICS.getEntityLoadCount());
+        });
     }
 
     @Test
     void given_a_persisted_entity_when_get_reference_after_transaction_ic_closed_then_throws_an_exception() {
+        run(entityManager -> entityManager.persist(client));
+        run(entityManager -> clientProxy = entityManager.getReference(Client.class, client.getId()));
+        assertThrows(LazyInitializationException.class, () -> clientProxy.getFirstName());
     }
 
     @Test
     void given_an_entity_with_custom_mappings_when_persist_then_entity_state_is_saved_into_database() {
+        // var paymentId = Fixtures.testPaymentId(); // @IdClass, @Embeddable
+
+        /* @IdClass
+        payment.setId(paymentId.getId());
+        payment.setExternalTransactionId(paymentId.getExternalTransactionId());
+        */
+
+        /* @Embeddable
+        payment.setId(paymentId);
+        */
+
+        payment.setId(Fixtures.uuid());
+        payment.setExternalTransactionId(Fixtures.uuid());
+
+        run(entityManager -> entityManager.persist(payment));
+        run(entityManager -> {
+            // var persistedPayment = entityManager.find(Payment.class, paymentId); // @IdClass, @Embeddable
+            var persistedPayment = entityManager.find(Payment.class, payment.getId());
+            assertNotNull(persistedPayment);
+        });
+    }
+
+    private void createPost() {
+
     }
 
     @Test
     void given_entities_with_relations_when_persist_all_entities_then_entities_state_and_relations_are_synchronized_with_database() {
+
     }
 
     @Test
