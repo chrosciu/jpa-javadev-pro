@@ -15,6 +15,7 @@
         <class>pl.training.jpa.Person</class>
         <class>pl.training.jpa.Employee</class>
         <class>pl.training.jpa.ContractEmployee</class>
+        <class>pl.training.jpa.Account</class>
         <!--<shared-cache-mode>ENABLE_SELECTIVE</shared-cache-mode>-->
         <properties>
             <property name="jakarta.persistence.jdbc.url" value="jdbc:postgresql://localhost:5432/training"/>

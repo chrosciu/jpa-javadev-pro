@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static pl.training.jpa.TestUtils.*;
@@ -305,12 +306,6 @@ class JpaTest {
         }); // ~52 000 ms dla pageSize = 100*/
     }
 
-
-
-
-
-
-
     @Test
     void given_versioned_entity_when_first_transaction_tires_to_override_changes_from_second_transaction_then_first_transaction_is_rolled_back() throws InterruptedException {
     }
@@ -333,35 +328,13 @@ class JpaTest {
     }
 
     @Test
-    void select_all_trainings() {
-    }
-
-    @Test
-    void select_trainings_by_title() {
-    }
-
-    @Test
-    void select_trainings_code_and_title() {
-    }
-
-    @Test
-    void select_trainings_projection() {
-    }
-
-    @Test
-    void select_trainings_authors_last_name_and_trainings_title() {
-    }
-
-    @Test
-    void select_trainings_by_tags() {
-    }
-
-    @Test
-    void select_trainings_with_duration() {
-    }
-
-    @Test
-    void select_trainings_authors_last_name_and_trainings_count_when_trainings_count_is_greater_or_equal_two() {
+    void given_custom_id_generator_when_persist_then_id_is_assigned_to_entity() {
+        run(entityManager -> {
+            var account = new Account();
+           // account.setId(UUID.randomUUID());
+            account.setValue(BigDecimal.valueOf(1));
+            entityManager.persist(account);
+        });
     }
 
 }
