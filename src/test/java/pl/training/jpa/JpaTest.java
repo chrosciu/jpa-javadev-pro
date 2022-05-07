@@ -16,6 +16,8 @@ import static pl.training.jpa.TestUtils.*;
 
 class JpaTest {
 
+    private static final int RECORDS_COUNT = 10_000;
+
     private final Client client = Fixtures.testClient();
     private final Payment payment = Fixtures.testPayment(BigDecimal.valueOf(1_000));
     private final Post post = Fixtures.testPost("Test title", "Test content");
@@ -241,15 +243,73 @@ class JpaTest {
 
     @Test
     void given_entity_when_query_with_constructor_expression_then_returns_entity_projection() {
+        createPost();
+        run(entityManager -> {
+            var postInfo = entityManager.createQuery("select new pl.training.jpa.PostInfo(p.id, p.title) from Post p", PostInfo.class)
+                    .getSingleResult();
+            assertEquals(post.getTitle(), postInfo.getTitle());
+        });
+    }
+
+    private void createPayments() {
+        run(entityManager -> {
+            for (int record = 1; record <= RECORDS_COUNT; record++) {
+                var payment = Fixtures.testPayment(BigDecimal.valueOf(10_000));
+                payment.setId(Fixtures.uuid());
+                payment.setExternalTransactionId(Fixtures.uuid());
+                entityManager.persist(payment);
+            }
+        });
     }
 
     @Test
     void given_many_entities_when_bulk_update_then_updates_the_database_without_loading_entities() {
+       createPayments();
+       System.out.println("##################################################################");
+       measure(() -> run(entityManager -> entityManager.createQuery("update Payment p set p.money.value = :value")
+               .setParameter("value", 500)
+               .executeUpdate())); // ~200 ms
     }
 
     @Test
     void given_many_entities_when_clear_then_releases_managed_entities() {
+        createPayments();
+        System.out.println("##################################################################");
+        measure(() -> run(entityManager -> {
+            var pageSize = 100;
+            var pagesCount = RECORDS_COUNT / pageSize;
+            for(int page = 0; page <= pagesCount; page++) {
+                entityManager.createQuery("select p from Payment p", Payment.class)
+                        .setFirstResult(page * pageSize)
+                        .setMaxResults(pageSize)
+                        .getResultList()
+                        .forEach(record -> record.updateValue(BigDecimal.valueOf(500)));
+                entityManager.clear();
+            }
+        })); // ~53 000 ms dla pageSize = RECORDS_COUNT, ~50 000 ms dla pageSize = 1_000, ~53 000 ms dla pageSize = 100
+
+       /* measure(() -> {
+            var pageSize = 100;
+            var pagesCount = RECORDS_COUNT / pageSize;
+            for(int page = 0; page <= pagesCount; page++) {
+                var pageNumber = page * pageSize;
+                run(entityManager -> {
+                    entityManager.createQuery("select p from Payment p", Payment.class)
+                            .setFirstResult(pageNumber)
+                            .setMaxResults(pageSize)
+                            .getResultList()
+                            .forEach(record -> record.updateValue(BigDecimal.valueOf(500)));
+                    entityManager.clear();
+                });
+            }
+        }); // ~52 000 ms dla pageSize = 100*/
     }
+
+
+
+
+
+
 
     @Test
     void given_versioned_entity_when_first_transaction_tires_to_override_changes_from_second_transaction_then_first_transaction_is_rolled_back() throws InterruptedException {
@@ -261,6 +321,15 @@ class JpaTest {
 
     @Test
     void given_entities_with_inheritance_when_persist_all_entities_then_entities_state_and_relations_are_synchronized_with_database() {
+        var employee = new Employee();
+        employee.setName("Jan Kowalski");
+        var contractEmployee = new ContractEmployee();
+        contractEmployee.setName("Marek Nowak");
+        contractEmployee.setContractType("b2b");
+        run(entityManager -> {
+            entityManager.persist(employee);
+            entityManager.persist(contractEmployee);
+        });
     }
 
     @Test

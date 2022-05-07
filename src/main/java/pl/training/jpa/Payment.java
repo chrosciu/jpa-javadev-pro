@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.java.Log;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -67,6 +68,10 @@ import java.util.Map;
     private Map<String, String> properties;
     @Version
     private Long version;
+
+    public void updateValue(BigDecimal newValue) {
+        money.setValue(newValue);
+    }
 
    /* @PrePersist
     public void prePersist() {

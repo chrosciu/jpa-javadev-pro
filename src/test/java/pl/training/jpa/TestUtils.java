@@ -35,4 +35,10 @@ public class TestUtils {
         }
     }
 
+    static void measure(Runnable runnable) {
+        var startTime = System.currentTimeMillis();
+        runnable.run();
+        System.out.printf("Total time: %d ms\n", System.currentTimeMillis() - startTime);
+    }
+
 }
