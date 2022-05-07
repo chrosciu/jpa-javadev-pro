@@ -12,7 +12,7 @@ import java.util.Map;
 
 @ExcludeSuperclassListeners
 @ExcludeDefaultListeners
-@EntityListeners(PaymentListener.class)
+//@EntityListeners(PaymentListener.class)
 // @IdClass(PaymentId.class)
 @Table(name = "payments", indexes = @Index(name = "paymentStatus", columnList = "status"))
 @Entity

@@ -1,15 +1,35 @@
 package pl.training.jpa;
 
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static pl.training.jpa.TestUtils.ENTITY_MANAGER_FACTORY;
+import static pl.training.jpa.TestUtils.run;
 
 class JpaTest {
 
+    private final Client client = Fixtures.testClient();
+
+    @AfterAll
+    static void afterAll() {
+        ENTITY_MANAGER_FACTORY.close();
+    }
+
     @Test
     void given_an_entity_object_when_persist_then_entity_state_is_saved_into_database() {
+        run(entityManager -> entityManager.persist(client));
+        run(entityManager -> {
+            var persistedClient = entityManager.find(Client.class, client.getId());
+            assertEquals(client.getLastName(), persistedClient.getLastName());
+            assertEquals(client.getFirstName(), persistedClient.getFirstName());
+        });
     }
 
     @Test
     void given_an_attached_entity_when_entity_state_is_changed_then_entity_state_is_automatically_synchronized_with_the_database() {
+
     }
 
     @Test

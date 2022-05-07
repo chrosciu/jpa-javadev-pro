@@ -13,8 +13,8 @@ import java.util.Objects;
 
 // https://vladmihalcea.com/hibernate-facts-equals-and-hashcode
 // https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier
-@Cacheable
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+//@Cacheable
+//@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Entity
 @Getter
 @Setter
