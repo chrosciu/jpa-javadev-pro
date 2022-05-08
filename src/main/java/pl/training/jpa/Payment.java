@@ -66,8 +66,8 @@ import java.util.Map;
     @Column(name = "value")
     @ElementCollection(fetch = FetchType.LAZY)
     private Map<String, String> properties;
-    @Version
-    private Long version;
+    //@Version
+    //private Long version;
 
     public void updateValue(BigDecimal newValue) {
         money.setValue(newValue);

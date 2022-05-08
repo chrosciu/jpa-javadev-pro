@@ -1,5 +1,6 @@
 package pl.training.jpa;
 
+import jakarta.persistence.LockModeType;
 import jakarta.persistence.RollbackException;
 import org.hibernate.LazyInitializationException;
 import org.junit.jupiter.api.AfterAll;
@@ -307,10 +308,32 @@ class JpaTest {
 
     @Test
     void given_versioned_entity_when_first_transaction_tires_to_override_changes_from_second_transaction_then_first_transaction_is_rolled_back() throws InterruptedException {
+        payment.setId(Fixtures.uuid());
+        payment.setExternalTransactionId(Fixtures.uuid());
+        run(entityManager -> entityManager.persist(payment));
+        execute(List.of(
+                new UpdatePaymentTask(payment.getId(), BigDecimal.valueOf(3_000), LockModeType.NONE, 1, 5),
+                new UpdatePaymentTask(payment.getId(), BigDecimal.valueOf(6_000), LockModeType.NONE, 2, 3)
+        ));
+        run(entityManager -> {
+            var persistedPayment = entityManager.find(Payment.class, payment.getId());
+            assertEquals(BigDecimal.valueOf(6_000).setScale(2), persistedPayment.getMoney().getValue());
+        });
     }
 
     @Test
     void given_two_transactions_when_first_transactions_acquired_the_lock_then_second_transaction_waits_for_first_transaction_to_release_the_lock() throws InterruptedException {
+        payment.setId(Fixtures.uuid());
+        payment.setExternalTransactionId(Fixtures.uuid());
+        run(entityManager -> entityManager.persist(payment));
+        execute(List.of(
+                new UpdatePaymentTask(payment.getId(), BigDecimal.valueOf(3_000), LockModeType.PESSIMISTIC_WRITE, 1, 5),
+                new UpdatePaymentTask(payment.getId(), BigDecimal.valueOf(6_000), LockModeType.PESSIMISTIC_WRITE, 2, 3)
+        ));
+        run(entityManager -> {
+            var persistedPayment = entityManager.find(Payment.class, payment.getId());
+            assertEquals(BigDecimal.valueOf(6_000).setScale(2), persistedPayment.getMoney().getValue());
+        });
     }
 
     @Test

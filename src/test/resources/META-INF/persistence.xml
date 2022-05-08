@@ -27,8 +27,8 @@
             <property name="hibernate.connection.provider_class" value="com.zaxxer.hikari.hibernate.HikariConnectionProvider"/>
             <property name="hibernate.hikari.maximumPoolSize" value="10"/>
             <property name="hibernate.generate_statistics" value="true"/>
-            <property name="hibernate.show_sql" value="true"/>
-            <property name="hibernate.format_sql" value="true"/>
+          <!--  <property name="hibernate.show_sql" value="true"/>
+            <property name="hibernate.format_sql" value="true"/>-->
             <property name="jakarta.persistence.validation.group.pre-persist" value="pl.training.jpa.Extended"/>
             <property name="jakarta.persistence.validation.group.pre-update" value="pl.training.jpa.Base"/>
             <!--<property name="cache.use_second_level_cache" value="true"/>
