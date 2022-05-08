@@ -30,13 +30,14 @@ public class Template {
     private String substitute(Map<String, String> values) {
         var result = textWithExpressions;
         for (Entry<String, String> entry : values.entrySet()) {
-            result = result.replaceAll(createExpression(entry), entry.getValue());
+            var expression = createExpression(entry.getKey());
+            result = result.replaceAll(expression, entry.getValue());
         }
         return result;
     }
 
-    private String createExpression(Entry<String, String> entry) {
-        return EXPRESSION_START + entry.getKey() + EXPRESSION_END;
+    private String createExpression(String key) {
+        return EXPRESSION_START + key + EXPRESSION_END;
     }
 
     private boolean isValuesComplete(Map<String, String> values) {
