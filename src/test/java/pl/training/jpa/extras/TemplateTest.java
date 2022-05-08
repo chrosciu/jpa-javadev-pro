@@ -1,5 +1,7 @@
 package pl.training.jpa.extras;
 
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
@@ -19,16 +21,30 @@ class TemplateTest {
         assertEquals(TEXT_WITHOUT_EXPRESSIONS, template.evaluate(emptyMap()));
     }
 
-    @Test
-    void given_a_text_with_expressions_when_evaluate_then_returns_the_text_with_substituted_value() {
-        var values = Map.of("firstName", "Jan", "lastName", "Kowalski");
-        var template = new Template(TEXT_WITH_EXPRESSIONS);
-        assertEquals(TEXT_WITHOUT_EXPRESSIONS, template.evaluate(values));
-    }
 
-    @Test
-    void given_a_text_with_expressions_when_evaluating_without_providing_all_values_then_throws_exception() {
-        assertThrows(IllegalArgumentException.class, () -> new Template(TEXT_WITH_EXPRESSIONS).evaluate(emptyMap()));
+    @DisplayName("given a text with expressions")
+    @Nested
+    class GivenTextWithExpressions {
+
+        @Test
+        void when_evaluate_then_returns_the_text_with_substituted_value() {
+            var values = Map.of("firstName", "Jan", "lastName", "Kowalski");
+            var template = new Template(TEXT_WITH_EXPRESSIONS);
+            assertEquals(TEXT_WITHOUT_EXPRESSIONS, template.evaluate(values));
+        }
+
+        @Test
+        void when_evaluating_without_providing_all_values_then_throws_exception() {
+            assertThrows(IllegalArgumentException.class, () -> new Template(TEXT_WITH_EXPRESSIONS).evaluate(emptyMap()));
+        }
+
+        @Test
+        void when_evaluating_evaluating_with_non_alphanumeric_values_then_throws_exception() {
+            var values = Map.of("firstName", "@", "lastName", "#");
+            var template = new Template(TEXT_WITH_EXPRESSIONS);
+            assertThrows(IllegalArgumentException.class, () -> template.evaluate(values));
+        }
+
     }
 
 }

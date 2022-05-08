@@ -11,6 +11,8 @@ public class Template {
     private static final String EXPRESSION_START = "\\$\\{";
     private static final String EXPRESSION_END = "}";
     private static final Pattern EXPRESSION = Pattern.compile(EXPRESSION_START + "\\w+" + EXPRESSION_END);
+
+    private static final String INVALID_VALUE = ".*\\W+.*";
     private final String textWithExpressions;
     public Template(String textWithExpressions) {
         this.textWithExpressions = textWithExpressions;
@@ -22,7 +24,7 @@ public class Template {
     }
 
     private void validate(Map<String, String> values) {
-        if (isValuesComplete(values)) {
+        if (!isComplete(values) || !isAlphanumeric(values)) {
             throw new IllegalArgumentException();
         }
     }
@@ -40,8 +42,12 @@ public class Template {
         return EXPRESSION_START + key + EXPRESSION_END;
     }
 
-    private boolean isValuesComplete(Map<String, String> values) {
-        return values.size() != getExpressions().count();
+    private boolean isComplete(Map<String, String> values) {
+        return values.size() == getExpressions().count();
+    }
+
+    private boolean isAlphanumeric(Map<String, String> values) {
+        return values.values().stream().noneMatch(value -> value.matches(INVALID_VALUE));
     }
 
     private Stream<MatchResult> getExpressions() {
