@@ -7,7 +7,7 @@ import java.util.Set;
 import static java.util.Collections.disjoint;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.concat;
-import static pl.training.examples.Player.CROSS;
+import static pl.training.jpa.extras.Player.CROSS;
 
 public class TicTacToe {
 
