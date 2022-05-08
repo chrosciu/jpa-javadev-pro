@@ -16,6 +16,7 @@
         <class>pl.training.jpa.Employee</class>
         <class>pl.training.jpa.ContractEmployee</class>
         <class>pl.training.jpa.Account</class>
+        <validation-mode>AUTO</validation-mode>
         <!--<shared-cache-mode>ENABLE_SELECTIVE</shared-cache-mode>-->
         <properties>
             <property name="jakarta.persistence.jdbc.url" value="jdbc:postgresql://localhost:5432/training"/>
@@ -28,6 +29,8 @@
             <property name="hibernate.generate_statistics" value="true"/>
             <property name="hibernate.show_sql" value="true"/>
             <property name="hibernate.format_sql" value="true"/>
+            <property name="jakarta.persistence.validation.group.pre-persist" value="pl.training.jpa.Extended"/>
+            <property name="jakarta.persistence.validation.group.pre-update" value="pl.training.jpa.Base"/>
             <!--<property name="cache.use_second_level_cache" value="true"/>
             <property name="hibernate.cache.use_query_cache" value="true"/>
             <property name="hibernate.cache.region.factory_class" value="org.hibernate.cache.ehcache.internal.EhcacheRegionFactory"/>-->

@@ -10,7 +10,6 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static pl.training.jpa.TestUtils.*;
@@ -331,10 +330,72 @@ class JpaTest {
     void given_custom_id_generator_when_persist_then_id_is_assigned_to_entity() {
         run(entityManager -> {
             var account = new Account();
-           // account.setId(UUID.randomUUID());
-            account.setValue(BigDecimal.valueOf(1));
+            account.setNumber("00000000000000000000000001");
+            account.setValue(1000);
             entityManager.persist(account);
         });
+    }
+
+    private void createTrainings() {
+        run(entityManager -> {
+            var javaTag = new Tag();
+            javaTag.setId(Fixtures.uuid());
+            javaTag.setName("java");
+
+            var oopTag = new Tag();
+            oopTag.setId(Fixtures.uuid());
+            oopTag.setName("oop");
+
+            var firstAuthor = new Person();
+            firstAuthor.setId(Fixtures.uuid());
+            firstAuthor.setFirstName("Jan");
+            firstAuthor.setLastName("Kowalski");
+            firstAuthor.setEmails(Set.of("jan.kowalski@trainig.pl"));
+
+            var secondAuthor = new Person();
+            secondAuthor.setId(Fixtures.uuid());
+            secondAuthor.setFirstName("Marek");
+            secondAuthor.setLastName("Nowak");
+            secondAuthor.setEmails(Set.of("marek.nowak@trainig.pl", "mnowak@gmail.com"));
+
+            var firstTrainingDuration = new Duration();
+            firstTrainingDuration.setValue(40L);
+            firstTrainingDuration.setUnit(DurationUnit.HOURS);
+
+            var firstTraining = new Training();
+            firstTraining.setId(Fixtures.uuid());
+            firstTraining.setAuthors(List.of(firstAuthor));
+            firstTraining.setCode("JPR");
+            firstTraining.setDifficulty(Difficulty.BASIC);
+            firstTraining.setDescription("Programming in Java");
+            firstTraining.setTags(Set.of(oopTag, javaTag));
+            firstTraining.setTitle("Programming in Java");
+            firstTraining.setType(TrainingType.STATIONARY);
+            firstTraining.setDuration(firstTrainingDuration);
+
+            var secondTrainingDuration = new Duration();
+            secondTrainingDuration.setValue(13L);
+            secondTrainingDuration.setUnit(DurationUnit.HOURS);
+
+            var secondTraining = new Training();
+            secondTraining.setId(Fixtures.uuid());
+            secondTraining.setAuthors(List.of(firstAuthor, secondAuthor));
+            secondTraining.setCode("CPR");
+            secondTraining.setDifficulty(Difficulty.BASIC);
+            secondTraining.setDescription("Programming in C++");
+            secondTraining.setTags(Set.of(oopTag));
+            secondTraining.setTitle("Programming in C++");
+            secondTraining.setType(TrainingType.STATIONARY);
+            secondTraining.setDuration(secondTrainingDuration);
+
+            entityManager.persist(javaTag);
+            entityManager.persist(oopTag);
+            entityManager.persist(firstAuthor);
+            entityManager.persist(secondAuthor);
+            entityManager.persist(firstTraining);
+            entityManager.persist(secondTraining);
+        });
+        System.out.println("#######################################################################################################");
     }
 
 }
